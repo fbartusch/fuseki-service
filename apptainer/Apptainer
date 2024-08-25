@@ -1,0 +1,63 @@
+Bootstrap: docker
+From: rockylinux:9.3.20231119
+
+%environment
+    LC_ALL=C
+
+%files
+    #TODO copy configuration
+    
+
+%post
+    dnf -y update
+    dnf -y upgrade
+    dnf install -y epel-release java-21-openjdk wget 
+
+    FUSEKI_VERSION=5.1.0
+    FUSEKI_INSTALL_DIR=/opt
+    FUSEKI_HOME=/opt/fuseki
+
+    # Download and extract Fuseki
+    mkdir $FUSEKI_HOME
+    wget https://archive.apache.org/dist/jena/binaries/apache-jena-fuseki-${FUSEKI_VERSION}.tar.gz
+    tar xzf apache-jena-fuseki-${FUSEKI_VERSION}.tar.gz -C $FUSEKI_INSTALL_DIR
+    mv ${FUSEKI_INSTALL_DIR}/apache-jena-fuseki-${FUSEKI_VERSION} ${FUSEKI_INSTALL_DIR}/fuseki
+
+    # Create fuseki user
+    useradd --system fuseki
+    chown -R fuseki:fuseki ${FUSEKI_INSTALL_DIR}/fuseki
+
+    #TODO Add them in the files section?
+    mkdir /etc/fuseki
+    cp ../configurationshiro.ini config.ttl fuseki-jetty-https.xml /etc/fuseki
+    chown -R fuseki:fuseki /etc/fuseki
+
+    #TODO quick fix until it's included in the file section
+    #sudo cp ~/github/fbartusch/fuseki-service/configuration/* /tmp/fuseki-sandbox/etc/fuseki/
+
+    #TODO How to handle java keystore in container?
+    #keytool -importcert -alias fuseki_cert -file <your certificate> -keystore /etc/fuseki/keystore.p12
+    #chown fuseki:fuseki /etc/fuseki/keystore.p12
+
+    # Tidy up
+    rm apache-jena-fuseki-${FUSEKI_VERSION}.tar.gz
+    dnf clean all
+
+%test
+
+%environment
+
+%runscript
+    #TODO Run with configuration but with test data?
+
+%startscript
+    export FUSEKI_HOME=/opt/fuseki
+    export FUSEKI_BASE=/etc/fuseki
+    export JVM_ARGS=-Xmx4G
+
+    /opt/fuseki/fuseki-server --jetty-config=/etc/fuseki/fuseki-jetty-https.xml
+
+%labels
+
+%help
+    
