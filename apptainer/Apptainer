@@ -4,8 +4,14 @@ From: rockylinux:9.3.20231119
 %environment
     LC_ALL=C
 
+%setup 
+    mkdir ${APPTAINER_ROOTFS}/etc/fuseki
+
 %files
     #TODO copy configuration
+    ../configuration/shiro.ini /etc/fuseki
+    ../configuration/config.ttl /etc/fuseki
+    ../configuration/fuseki-jetty-https.xml /etc/fuseki 
     
 
 %post
@@ -13,27 +19,23 @@ From: rockylinux:9.3.20231119
     dnf -y upgrade
     dnf install -y epel-release java-21-openjdk wget 
 
+    #TODO set proper JAVA_HOME
+    JAVA_HOME=/usr/lib/jvm/jre-21-openjdk
+
     FUSEKI_VERSION=5.1.0
     FUSEKI_INSTALL_DIR=/opt
     FUSEKI_HOME=/opt/fuseki
 
     # Download and extract Fuseki
-    mkdir $FUSEKI_HOME
     wget https://archive.apache.org/dist/jena/binaries/apache-jena-fuseki-${FUSEKI_VERSION}.tar.gz
+    # --strip-components=1
     tar xzf apache-jena-fuseki-${FUSEKI_VERSION}.tar.gz -C $FUSEKI_INSTALL_DIR
     mv ${FUSEKI_INSTALL_DIR}/apache-jena-fuseki-${FUSEKI_VERSION} ${FUSEKI_INSTALL_DIR}/fuseki
 
     # Create fuseki user
     useradd --system fuseki
     chown -R fuseki:fuseki ${FUSEKI_INSTALL_DIR}/fuseki
-
-    #TODO Add them in the files section?
-    mkdir /etc/fuseki
-    cp ../configurationshiro.ini config.ttl fuseki-jetty-https.xml /etc/fuseki
     chown -R fuseki:fuseki /etc/fuseki
-
-    #TODO quick fix until it's included in the file section
-    #sudo cp ~/github/fbartusch/fuseki-service/configuration/* /tmp/fuseki-sandbox/etc/fuseki/
 
     #TODO How to handle java keystore in container?
     #keytool -importcert -alias fuseki_cert -file <your certificate> -keystore /etc/fuseki/keystore.p12
@@ -46,13 +48,15 @@ From: rockylinux:9.3.20231119
 %test
 
 %environment
+    export JAVA_HOME=/usr/lib/jvm/jre-21-openjdk
+    export FUSEKI_HOME=/opt/fuseki
+    export FUSEKI_BASE=/etc/fuseki
+    export FUSEKI_VERSION=5.1.0
 
 %runscript
     #TODO Run with configuration but with test data?
 
 %startscript
-    export FUSEKI_HOME=/opt/fuseki
-    export FUSEKI_BASE=/etc/fuseki
     export JVM_ARGS=-Xmx4G
 
     /opt/fuseki/fuseki-server --jetty-config=/etc/fuseki/fuseki-jetty-https.xml
