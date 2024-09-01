@@ -55,8 +55,7 @@ Some more tools to help manage Java certificate store:
     <!-- =========================================================== -->
     <Call name="addBean">
         <Arg>
-            <New
-class="org.eclipse.jetty.util.thread.ScheduledExecutorScheduler"/>
+            <New class="org.eclipse.jetty.util.thread.ScheduledExecutorScheduler"/>
         </Arg>
     </Call>
 
@@ -76,8 +75,6 @@ class="org.eclipse.jetty.util.thread.ScheduledExecutorScheduler"/>
     <!-- for all configuration that may be set here.                 -->
     <!-- =========================================================== -->
     <New id="httpConfig" class="org.eclipse.jetty.server.HttpConfiguration">
-	<Set name="secureScheme">https</Set>
-	<Set name="securePort">8443</Set>
         <Set name="outputBufferSize">32768</Set>
         <Set name="outputAggregationSize">8192</Set>
         <Set name="requestHeaderSize">8192</Set>
@@ -86,10 +83,9 @@ class="org.eclipse.jetty.util.thread.ScheduledExecutorScheduler"/>
         <Set name="sendDateHeader">false</Set>
         <Set name="headerCacheSize">512</Set>
         <Set name="delayDispatchUntilContent">true</Set>
-	<!-- Uncomment to enable handling of X-Forwarded- style headers-->
+	    <!-- Uncomment to enable handling of X-Forwarded-style headers-->
         <Call name="addCustomizer">
-          <Arg><New
-class="org.eclipse.jetty.server.ForwardedRequestCustomizer"/></Arg>
+          <Arg><New class="org.eclipse.jetty.server.ForwardedRequestCustomizer"/></Arg>
         </Call>
         <Call name="addCustomizer">
             <Arg>
@@ -97,6 +93,8 @@ class="org.eclipse.jetty.server.ForwardedRequestCustomizer"/></Arg>
             </Arg>
         </Call>
     </New>
+
+
 
     <!-- =========================================================== -->
     <!-- Set the default handler structure for the Server            -->
@@ -110,17 +108,14 @@ class="org.eclipse.jetty.server.ForwardedRequestCustomizer"/></Arg>
     <!-- RequestLogHandler after the default handler                 -->
     <!-- =========================================================== -->
     <Set name="handler">
-        <New id="Handlers"
-class="org.eclipse.jetty.server.handler.HandlerCollection">
+        <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
             <Set name="handlers">
                 <Array type="org.eclipse.jetty.server.Handler">
                     <Item>
-                        <New id="Contexts"
-class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
+                        <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
                     </Item>
                     <Item>
-                        <New id="DefaultHandler"
-class="org.eclipse.jetty.server.handler.DefaultHandler"/>
+                        <New id="DefaultHandler" class="org.eclipse.jetty.server.handler.DefaultHandler"/>
                     </Item>
                 </Array>
             </Set>
@@ -153,29 +148,30 @@ class="org.eclipse.jetty.server.handler.DefaultHandler"/>
     <!-- =========================================================== -->
     <Call name="addConnector">
         <Arg>
-            <New id="httpConnector"
-class="org.eclipse.jetty.server.ServerConnector">
+            <New id="httpConnector" class="org.eclipse.jetty.server.ServerConnector">
                 <Arg name="server">
                     <Ref refid="Server"/>
                 </Arg>
                 <Arg name="acceptors" type="int">-1</Arg>
                 <Arg name="selectors" type="int">-1</Arg>
                 <Arg name="factories">
-                    <Array
-type="org.eclipse.jetty.server.ConnectionFactory">
-                        <!-- uncomment to support proxy protocol
+                    <Array type="org.eclipse.jetty.server.ConnectionFactory">
+                        <!-- support proxy-protocol-->
                         <Item>
-                          <New
-class="org.eclipse.jetty.server.ProxyConnectionFactory"/>
-                        </Item>-->
+                            <New class="org.eclipse.jetty.server.ProxyConnectionFactory"/>
+                        </Item>
+                        <!-- support http/1-->
                         <Item>
-                            <New
-class="org.eclipse.jetty.server.HttpConnectionFactory">
-                                <Arg name="config">
-                                    <Ref refid="httpConfig"/>
-                                </Arg>
+                            <New class="org.eclipse.jetty.server.HttpConnectionFactory">
+                                <Arg name="config"><Ref refid="httpConfig"/></Arg>
                             </New>
                         </Item>
+                        <!-- support http/2
+                        <Item>
+                            <New class="org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory">
+                                <Arg name="config"><Ref refid="httpConfig"/></Arg>
+                            </New>
+                        </Item>-->
                     </Array>
                 </Arg>
                 <Set name="host"/>
@@ -196,7 +192,7 @@ class="org.eclipse.jetty.server.HttpConnectionFactory">
     <!-- =========================================================== -->
     <!-- Add a SSL Connector with no protocol factories              -->
     <!-- =========================================================== -->
-    <Call name="addConnector">
+   <!-- <Call name="addConnector">
         <Arg>
             <New id="sslConnector"
 class="org.eclipse.jetty.server.ServerConnector">
@@ -208,11 +204,6 @@ class="org.eclipse.jetty.server.ServerConnector">
                 <Arg name="factories">
                     <Array
 type="org.eclipse.jetty.server.ConnectionFactory">
-                        <!-- uncomment to support proxy protocol
-                        <Item>
-                          <New
-class="org.eclipse.jetty.server.ProxyConnectionFactory"/>
-                        </Item>-->
                     </Array>
                 </Arg>
                 <Set name="host"/>
@@ -222,7 +213,7 @@ class="org.eclipse.jetty.server.ProxyConnectionFactory"/>
                 <Set name="acceptQueueSize">0</Set>
             </New>
         </Arg>
-    </Call>
+    </Call>-->
 
     <!-- =========================================================== -->
     <!-- Create a TLS specific HttpConfiguration based on the        -->
@@ -230,7 +221,7 @@ class="org.eclipse.jetty.server.ProxyConnectionFactory"/>
     <!-- Add a SecureRequestCustomizer to extract certificate and    -->
     <!-- session information                                         -->
     <!-- =========================================================== -->
-    <New id="sslHttpConfig"
+    <!--<New id="sslHttpConfig"
 class="org.eclipse.jetty.server.HttpConfiguration">
         <Arg>
             <Ref refid="httpConfig"/>
@@ -247,17 +238,16 @@ type="boolean">false</Arg>
                 </New>
             </Arg>
         </Call>
-    </New>
+    </New>-->
 
     <!-- ============================================================= -->
     <!-- SSL ContextFactory configuration                              -->
     <!-- ============================================================= -->
-    <New id="sslContextFactory"
+    <!--<New id="sslContextFactory"
 class="org.eclipse.jetty.util.ssl.SslContextFactory$Server">
-	<Set name="KeyStorePath">/root/apache-jena-fuseki-4.10.0/keystore.p12</Set>
+    <Set name="KeyStorePath">/etc/fuseki/fuseki_keystore.p12</Set>
         <Set name="KeyStorePassword">password</Set>
-	<!--<Set name="KeyManagerPassword">MyPassword</Set>-->
-	<Set name="TrustStorePath">/root/apache-jena-fuseki-4.10.0/keystore.p12</Set>
+        <Set name="TrustStorePath">/etc/fuseki/fuseki_keystore.p12</Set>
         <Set name="TrustStorePassword">password</Set>
         <Set name="EndpointIdentificationAlgorithm"/>
         <Set name="NeedClientAuth">false</Set>
@@ -269,13 +259,14 @@ class="org.eclipse.jetty.util.ssl.SslContextFactory$Server">
             </Array>
         </Set>
         <Set name="UseCipherSuitesOrder">true</Set>
-    </New>
+    </New>-->
 
     <!-- ============================================================= -->
     <!-- Configure a HTTPS connector.                                  -->
     <!-- This configuration must be used in conjunction with jetty.xml -->
     <!-- and jetty-ssl.xml.                                            -->
     <!-- ============================================================= -->
+    <!--
     <Ref refid="sslConnector">
         <Call name="addIfAbsentConnectionFactory">
             <Arg>
@@ -296,7 +287,7 @@ class="org.eclipse.jetty.util.ssl.SslContextFactory$Server">
                 </New>
             </Arg>
         </Call>
-    </Ref>
+    </Ref>-->
 
     <!-- ============================================================= -->
     <!-- Configure ssl-context-reload.                                 -->
@@ -305,7 +296,7 @@ class="org.eclipse.jetty.util.ssl.SslContextFactory$Server">
     <!-- the KeyStore file, the correspondent SslContextFactory.Server -->
     <!-- component is reloaded with the new KeyStore configuration.    -->
     <!-- ============================================================= -->
-    <Call name="addBean">
+    <!--<Call name="addBean">
         <Arg>
             <New id="keyStoreScanner"
 class="org.eclipse.jetty.util.ssl.KeyStoreScanner">
@@ -315,5 +306,5 @@ class="org.eclipse.jetty.util.ssl.KeyStoreScanner">
                 <Set name="scanInterval">1</Set>
             </New>
         </Arg>
-    </Call>
+    </Call>-->
 </Configure>

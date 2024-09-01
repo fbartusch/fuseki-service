@@ -1,8 +1,9 @@
 db/
-fuseki/etc_fuseki
 mydomain*
+fuseki/etc_fuseki
 *.sif
 apptainer/etc_fuseki/
 apptainer/run/
 etc.hosts
 resolv.conf
+fuseki_keystore.p12
