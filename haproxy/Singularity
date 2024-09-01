@@ -1,0 +1,30 @@
+Bootstrap: docker
+From: rockylinux:9.3.20231119
+
+%environment
+    LC_ALL=C
+
+%files
+    haproxy.cfg /etc/haproxy/
+    mydomain.pem /etc/haproxy/certs/
+
+%post
+    dnf -y update
+    dnf -y upgrade
+    dnf install -y haproxy
+    dnf clean all
+
+%test
+
+%environment
+
+%runscript
+
+%startscript
+    haproxy \
+        -f /etc/haproxy/haproxy.cfg
+
+%labels
+
+%help
+    

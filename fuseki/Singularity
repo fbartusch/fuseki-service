@@ -4,43 +4,30 @@ From: rockylinux:9.3.20231119
 %environment
     LC_ALL=C
 
-%setup 
-    mkdir ${APPTAINER_ROOTFS}/etc/fuseki
-
-%files
-    #TODO copy configuration
-    ../configuration/shiro.ini /etc/fuseki
-    ../configuration/config.ttl /etc/fuseki
-    ../configuration/fuseki-jetty-https.xml /etc/fuseki 
-    
-
 %post
     dnf -y update
     dnf -y upgrade
-    dnf install -y epel-release java-21-openjdk wget 
+    dnf install -y epel-release java-21-openjdk wget haproxy
 
-    #TODO set proper JAVA_HOME
     JAVA_HOME=/usr/lib/jvm/jre-21-openjdk
 
-    FUSEKI_VERSION=5.1.0
+    FUSEKI_VERSION=4.10.0
     FUSEKI_INSTALL_DIR=/opt
     FUSEKI_HOME=/opt/fuseki
+    FUSEKI_BASE=/etc/fuseki
+    FUSEKI_DB=/etc/fuseki_db
 
     # Download and extract Fuseki
     wget https://archive.apache.org/dist/jena/binaries/apache-jena-fuseki-${FUSEKI_VERSION}.tar.gz
-    # --strip-components=1
     tar xzf apache-jena-fuseki-${FUSEKI_VERSION}.tar.gz -C $FUSEKI_INSTALL_DIR
     mv ${FUSEKI_INSTALL_DIR}/apache-jena-fuseki-${FUSEKI_VERSION} ${FUSEKI_INSTALL_DIR}/fuseki
 
-    # Create fuseki user
-    useradd --system fuseki
-    chown -R fuseki:fuseki ${FUSEKI_INSTALL_DIR}/fuseki
-    chown -R fuseki:fuseki /etc/fuseki
+    # FUSEKI_CONF will later bind the configuration files and the keystore into the container.
+    mkdir -p ${FUSEKI_BASE}
 
-    #TODO How to handle java keystore in container?
-    #keytool -importcert -alias fuseki_cert -file <your certificate> -keystore /etc/fuseki/keystore.p12
-    #chown fuseki:fuseki /etc/fuseki/keystore.p12
-
+    # FUSEKI_DB will later bind the host dir for storing the database.
+    mkdir -p ${FUSEKI_DB}
+  
     # Tidy up
     rm apache-jena-fuseki-${FUSEKI_VERSION}.tar.gz
     dnf clean all
@@ -51,14 +38,13 @@ From: rockylinux:9.3.20231119
     export JAVA_HOME=/usr/lib/jvm/jre-21-openjdk
     export FUSEKI_HOME=/opt/fuseki
     export FUSEKI_BASE=/etc/fuseki
-    export FUSEKI_VERSION=5.1.0
+    export FUSEKI_DB=/etc/fuseki_db
 
 %runscript
     #TODO Run with configuration but with test data?
 
 %startscript
     export JVM_ARGS=-Xmx4G
-
     /opt/fuseki/fuseki-server --jetty-config=/etc/fuseki/fuseki-jetty-https.xml
 
 %labels

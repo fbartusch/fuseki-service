@@ -1,0 +1,8 @@
+db/
+fuseki/etc_fuseki
+mydomain*
+*.sif
+apptainer/etc_fuseki/
+apptainer/run/
+etc.hosts
+resolv.conf
