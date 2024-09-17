@@ -1,0 +1,7 @@
+SELECT ?subject ?predicate ?object
+WHERE {
+  GRAPH <http://example/scheduler>
+  {
+    ?subject ?predicate ?object
+  }
+}
