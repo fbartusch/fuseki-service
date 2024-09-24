@@ -7,7 +7,7 @@ From: rockylinux:9.3.20231119
 %post
     dnf -y update
     dnf -y upgrade
-    dnf install -y epel-release java-21-openjdk wget haproxy
+    dnf install -y epel-release java-21-openjdk wget procps
 
     JAVA_HOME=/usr/lib/jvm/jre-21-openjdk
 
